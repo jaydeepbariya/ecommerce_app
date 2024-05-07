@@ -2,6 +2,7 @@ const cookieParser = require("cookie-parser");
 const express = require("express");
 const cors = require("cors");
 const dbConnect = require("./config/dbConfig");
+const { cloudinaryConnect } = require("./config/cloudinaryConfig");
 require("dotenv").config();
 
 const app = express();
@@ -19,3 +20,4 @@ app.use(cors({
 }));
 
 dbConnect();
+cloudinaryConnect();

@@ -8,7 +8,8 @@ const {
   forgotPassword,
   resetPassword,
   updateUserProfile,
-  deleteUserAccount
+  deleteUserAccount,
+  updateDisplayPicture
 } = require("../controllers/UserController");
 
 router.post("/register", registerUser);
@@ -18,5 +19,6 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.put("/profile", auth, updateUserProfile);
 router.delete("/profile", auth, deleteUserAccount);
+router.put("/displayPicture", auth, updateDisplayPicture);
 
 module.exports = router;

@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
     address: {
       type: String,
     },
-    roles: {
+    role: {
       type: String,
       enum: ["User", "Admin"],
       default: ["User"],
@@ -32,6 +32,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["Male", "Female", "Other"],
     },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordTokenExpires: {
+      type: Date,
+    },
+    displayPicture: {
+      type: String
+    }
   },
   { timestamps: true }
 );
