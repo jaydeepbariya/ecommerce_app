@@ -11,7 +11,6 @@ const { auth } = require("../middlewares/Auth");
 
 router.get("/:productId", getProductReviews);
 router.post("/:productId", auth, addProductReview);
-router.get("/:id", getReviewById);
 router.put("/:id", auth, updateReview);
 router.delete("/:id", auth, deleteReview);
 
