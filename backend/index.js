@@ -10,11 +10,13 @@ const reviewRouter = require("./routes/ReviewRoutes");
 
 const dbConnect = require("./config/dbConfig");
 const { cloudinaryConnect } = require("./config/cloudinaryConfig");
+const fileUpload = require('express-fileupload');
 require("dotenv").config();
 
 const app = express();
 
 const port = process.env.PORT || 4000;
+
 
 app.listen(port, () => console.log(`Server Running on port ${port}`));
 
@@ -26,7 +28,12 @@ app.use(
     credentials: true,
   })
 );
-
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp",
+  })
+);
 app.use("/api/users/", userRouter);
 app.use("/api/products/", productRouter);
 app.use("/api/categories/", categoryRouter);

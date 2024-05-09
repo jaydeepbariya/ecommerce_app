@@ -1,9 +1,12 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const UserModel = require("../models/UserModel");
-const CartModel = require("../models/CartModel");
-const ReviewModel = require("../models/ReviewModel");
-const OrderModel = require("../models/OrderModel");
+const jwt = require("jsonwebtoken");
+const User = require("../models/UserModel");
+const Cart = require("../models/CartModel");
+const Review = require("../models/ReviewModel");
+const Order = require("../models/OrderModel");
+const mailSender = require("../utils/mailSender");
+const { fileUploader } = require("../utils/fileUploader");
 
 exports.registerUser = async (req, res) => {
   try {
@@ -15,7 +18,7 @@ exports.registerUser = async (req, res) => {
         .json({ success: false, message: "All fields are required" });
     }
 
-    const existingUser = await UserModel.findOne({ email });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
         .status(400)
@@ -26,7 +29,7 @@ exports.registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Step 5: Create a new User using UserModel model and hashedPassword as password
-    const newUser = new UserModel({
+    const newUser = new User({
       email,
       password: hashedPassword,
       firstName,
@@ -57,7 +60,7 @@ exports.loginUser = async (req, res) => {
         .json({ success: false, message: "Email and password are required" });
     }
 
-    const user = await UserModel.findOne({ email });
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res
@@ -74,7 +77,7 @@ exports.loginUser = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      { _id: user._id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -108,9 +111,7 @@ exports.logoutUser = async (req, res) => {
 
 exports.forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
-
-    const user = await UserModel.findOne({ email });
+    const user = await User.findOne({ email: req.body.email });
 
     if (!user) {
       return res
@@ -128,11 +129,12 @@ exports.forgotPassword = async (req, res) => {
     const subject = "Password Reset";
     const text = `Click on the following link to reset your password: http://localhost:3000/reset-password/${resetToken}`;
 
-    await mailSender(email, subject, text);
+    await mailSender(req.body.email, subject, text);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Password reset link sent to your email",
+      token: resetToken,
     });
   } catch (error) {
     console.log("FORGOT PASSWORD ERROR ", error.message);
@@ -144,7 +146,7 @@ exports.resetPassword = async (req, res) => {
   try {
     const { token, password } = req.body;
 
-    const user = await UserModel.findOne({ resetPasswordToken: token });
+    const user = await User.findOne({ resetPasswordToken: token });
 
     if (!user || user.resetPasswordTokenExpires < Date.now()) {
       return res
@@ -171,8 +173,8 @@ exports.resetPassword = async (req, res) => {
 exports.updateUserProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-
-    const user = await UserModel.findById(userId);
+    console.log(req.user);
+    const user = await User.findById(userId);
 
     if (!user) {
       return res
@@ -217,7 +219,7 @@ exports.deleteUserAccount = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const user = await UserModel.findById(userId);
+    const user = await User.findById(userId);
 
     if (!user) {
       return res
@@ -225,11 +227,11 @@ exports.deleteUserAccount = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    await OrderModel.deleteMany({ user: userId });
-    await CartModel.deleteMany({ user: userId });
-    await ReviewModel.deleteMany({ user: userId });
+    await Order.deleteMany({ user: userId });
+    await Cart.deleteMany({ user: userId });
+    await Review.deleteMany({ user: userId });
 
-    await user.remove();
+    await user.deleteOne({ _id: userId });
 
     res
       .status(200)
@@ -243,8 +245,7 @@ exports.deleteUserAccount = async (req, res) => {
 exports.updateDisplayPicture = async (req, res) => {
   try {
     const userId = req.user._id;
-
-    const user = await UserModel.findById(userId);
+    const user = await User.findById(userId);
 
     if (!user) {
       return res
@@ -252,14 +253,19 @@ exports.updateDisplayPicture = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    if (!req.files || !req.files.displayPicture) {
+    const displayPicture = req.files.displayPicture;
+
+    if (!req.files || !displayPicture) {
       return res
         .status(400)
         .json({ success: false, message: "No file uploaded" });
     }
 
-    const { secure_url } = await cloudinary.uploader.upload(
-      req.files.displayPicture.path
+    const { secure_url } = await fileUploader(
+      displayPicture,
+      process.env.FOLDER_NAME,
+      1000,
+      1000
     );
 
     user.displayPicture = secure_url;
