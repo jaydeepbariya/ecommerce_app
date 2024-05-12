@@ -1,12 +1,10 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const User = require("../models/UserModel");
 
 exports.auth = async (req, res, next) => {
   try {
-    const token =
-      req.body.token ||
-      req.cookies.token ||
-      req.header("Authorization").replace("Bearer ", "");
+    const token = req.body.token || req.cookies.token;
 
     if (!token) {
       return res.status(400).json({
@@ -40,18 +38,18 @@ exports.auth = async (req, res, next) => {
 
 exports.isAdmin = async (req, res, next) => {
   try {
-    const userDetails = await User.findOne({ email: req.user.email });
-
-    if (userDetails.accountType !== "Admin") {
+    const userDetails = await User.findOne({ email: req.user.email }).select("-password");
+    console.log(userDetails);
+    if (userDetails.role !== "Admin") {
       return res.status(401).json({
         success: false,
-        message: "This is a Protected Route for Admin",
+        message: "This is a Protected Route for User",
       });
     }
     next();
   } catch (error) {
     return res
       .status(500)
-      .json({ success: false, message: `User Role Can't be Verified` });
+      .json({ success: false, message: `Role Can't be Verified` });
   }
 };

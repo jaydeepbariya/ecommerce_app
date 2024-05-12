@@ -1,9 +1,9 @@
-const CategoryModel = require("../models/CategoryModel");
+const Category = require("../models/CategoryModel");
 const ProductModel = require("../models/ProductModel");
 
 exports.getCategories = async (req, res) => {
   try {
-    const categories = await CategoryModel.find();
+    const categories = await Category.find();
 
     res.status(200).json({ success: true, categories });
   } catch (error) {
@@ -16,7 +16,7 @@ exports.getCategoryById = async (req, res) => {
   try {
     const categoryId = req.params.id;
 
-    const category = await CategoryModel.findById(categoryId);
+    const category = await Category.findById(categoryId);
 
     if (!category) {
       return res
@@ -35,7 +35,7 @@ exports.createCategory = async (req, res) => {
   try {
     const { name, description } = req.body;
 
-    const category = new CategoryModel({ name, description, products: [] });
+    const category = new Category({ name, description, products: [] });
 
     await category.save();
 
@@ -53,7 +53,7 @@ exports.updateCategory = async (req, res) => {
   try {
     const categoryId = req.params.id;
 
-    let category = await CategoryModel.findById(categoryId);
+    let category = await Category.findById(categoryId);
 
     if (!category) {
       return res
@@ -89,7 +89,7 @@ exports.deleteCategory = async (req, res) => {
 
     await ProductModel.deleteMany({ categoryId });
 
-    const deletedCategory = await CategoryModel.findByIdAndDelete(categoryId);
+    const deletedCategory = await Category.findByIdAndDelete(categoryId);
 
     if (!deletedCategory) {
       return res
