@@ -1,4 +1,5 @@
 const ProductModel = require("../models/ProductModel");
+const { fileUploader } = require("../utils/fileUploader");
 
 exports.getProducts = async (req, res) => {
   try {
@@ -35,7 +36,8 @@ exports.getProductById = async (req, res) => {
 exports.createProduct = async (req, res) => {
   try {
     const { name, description, price, categoryId, stock } = req.body;
-
+    console.log(req.body);
+    console.log(req.files);
     if (!name || !description || !price || !categoryId || !stock) {
       return res
         .status(400)
@@ -57,18 +59,18 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    const { secure_url } = await cloudinary.uploader.upload(
-      req.files.image.path
-    );
+    const { secure_url } = await fileUploader(req.files.image);
+    
 
     const product = new ProductModel({
       name,
       description,
       price,
       category: categoryId,
-      stock,
-      image: secure_url,
+      stock
     });
+
+    await product.images.push(secure_url);
 
     await product.save();
 
@@ -85,9 +87,9 @@ exports.createProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
-    const productId = req.params.id;
+    const {productId} = req.params;
 
-    let product = await Product.findById(productId);
+    let product = await ProductModel.findById(productId);
 
     if (!product) {
       return res
@@ -130,7 +132,7 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
   try {
-    const productId = req.params.id;
+    const {productId} = req.params;
 
     const deletedProduct = await ProductModel.findByIdAndDelete(productId);
 
@@ -151,7 +153,7 @@ exports.deleteProduct = async (req, res) => {
 
 exports.searchProducts = async (req, res) => {
   try {
-    const keyword = req.params.keyword;
+    const { keyword } = req.params;
 
     const products = await ProductModel.find({
       $or: [

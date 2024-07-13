@@ -11,10 +11,10 @@ const {
 } = require("../controllers/ProductController");
 
 router.get("/", getProducts);
-router.get("/:id", getProductById);
-router.get("/:keyword", searchProducts);
+router.get("/:productId", getProductById);
+router.get("/search/:keyword", searchProducts);
 router.post("/", auth, isAdmin, createProduct);
-router.put("/:id", auth, isAdmin, updateProduct);
-router.delete("/:id", auth, isAdmin, deleteProduct);
+router.put("/:productId", auth, isAdmin, updateProduct);
+router.delete("/:productId", auth, isAdmin, deleteProduct);
 
 module.exports = router;
