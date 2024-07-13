@@ -3,7 +3,6 @@ const router = express.Router();
 const {
   getProductReviews,
   addProductReview,
-  getReviewById,
   updateReview,
   deleteReview,
 } = require("../controllers/ReviewController");
@@ -11,7 +10,7 @@ const { auth } = require("../middlewares/Auth");
 
 router.get("/:productId", getProductReviews);
 router.post("/:productId", auth, addProductReview);
-router.put("/:id", auth, updateReview);
-router.delete("/:id", auth, deleteReview);
+router.put("/:reviewId", auth, updateReview);
+router.delete("/:reviewId", auth, deleteReview);
 
 module.exports = router;

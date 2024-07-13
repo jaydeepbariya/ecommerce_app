@@ -1,11 +1,11 @@
-const Review = require("../models/ReviewModel");
-const Product = require("../models/ProductModel");
+const ProductModel = require("../models/ProductModel");
+const ReviewModel = require("../models/ReviewModel");
 
 exports.getProductReviews = async (req, res) => {
   try {
     const productId = req.params.productId;
 
-    const reviews = await Review.find({ product: productId });
+    const reviews = await ReviewModel.find({ product: productId });
 
     res.status(200).json({ success: true, reviews });
   } catch (error) {
@@ -28,7 +28,7 @@ exports.addProductReview = async (req, res) => {
 
     const { rating, comment } = req.body;
 
-    const review = new Review({
+    const review = new ReviewModel({
       user: req.user._id,
       product: productId,
       rating,
@@ -48,9 +48,9 @@ exports.addProductReview = async (req, res) => {
 
 exports.updateReview = async (req, res) => {
   try {
-    const reviewId = req.params.id;
+    const reviewId = req.params.reviewId;
 
-    let review = await Review.findById(reviewId);
+    let review = await ReviewModel.findById(reviewId);
 
     if (!review) {
       return res
@@ -78,9 +78,9 @@ exports.updateReview = async (req, res) => {
 
 exports.deleteReview = async (req, res) => {
   try {
-    const reviewId = req.params.id;
+    const reviewId = req.params.reviewId;
 
-    const deletedReview = await Review.findByIdAndDelete(reviewId);
+    const deletedReview = await ReviewModel.findByIdAndDelete(reviewId);
 
     if (!deletedReview) {
       return res
