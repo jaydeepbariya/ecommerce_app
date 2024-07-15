@@ -54,7 +54,7 @@ exports.createOrder = async (req, res) => {
       0
     );
 
-    const order = new Order({
+    const order = new OrderModel({
       user,
       products,
       totalPrice: calculatedTotalPrice,

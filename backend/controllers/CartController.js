@@ -1,4 +1,5 @@
 const CartModel = require("../models/CartModel");
+const ProductModel = require("../models/ProductModel");
 
 exports.getUserCart = async (req, res) => {
   try {
@@ -19,22 +20,17 @@ exports.addToCart = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const productId = req.params.productId;
+    const {productId, quantity, price } = req.body;
 
     let userCart = await CartModel.findOne({ user: userId });
 
-    const existingProductIndex = userCart.products.findIndex(
-      (product) => product.productId.toString() === productId
-    );
+    let cartProduct = await ProductModel.findById(productId);
 
-    if (existingProductIndex !== -1) {
-      return res.status(400).json({
-        success: false,
-        message: "Product already exists in the cart",
-      });
+    if(!userCart){
+      userCart = await CartModel.create({ user: userId});
     }
 
-    userCart.products.push({ productId: productId });
+    userCart.products.push({ productId, quantity, price });
 
     userCart = await userCart.save();
 
@@ -55,11 +51,14 @@ exports.removeFromCart = async (req, res) => {
 
     const productId = req.params.productId;
 
-    let userCart = await Cart.findOne({ user: userId });
+    let userCart = await CartModel.findOne({ user: userId });
+    console.log(userCart.products);
 
     const existingProductIndex = userCart.products.findIndex(
-      (product) => product.productId.toString() === productId
+      (product) => product._id?.toString() === productId
     );
+
+    console.log(existingProductIndex);
 
     if (existingProductIndex === -1) {
       return res.status(400).json({
@@ -89,7 +88,7 @@ exports.updateCart = async (req, res) => {
 
     const { productId, quantity, price } = req.body;
 
-    let userCart = await Cart.findOne({ user: userId });
+    let userCart = await CartModel.findOne({ user: userId });
 
     const existingProductIndex = userCart.products.findIndex(
       (product) => product.productId.toString() === productId
